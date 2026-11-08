@@ -1,0 +1,11 @@
+{
+  "name": "ryan-portfolio",
+  "private": true,
+  "scripts": {
+    "build": "tailwindcss -i ./src/input.css -o ./assets/css/style.css --minify",
+    "dev": "tailwindcss -i ./src/input.css -o ./assets/css/style.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}

@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+
+/* ---------- Palettes (RGB triplets so Tailwind opacity modifiers work) ---------- */
+:root,
+[data-theme="nes"] {
+  --bg: 245 241 230;       /* cartridge-manual cream */
+  --surface: 255 253 247;
+  --ink: 28 28 34;
+  --muted: 88 88 98;
+  --accent: 214 0 40;      /* NES red */
+  --accent2: 34 92 190;    /* NES blue */
+  --screen: 155 188 15;    /* DMG screen green */
+  --screen-ink: 15 56 15;
+  --device: 206 204 196;   /* console grey */
+}
+[data-theme="gb"] {
+  --bg: 139 172 15;
+  --surface: 155 188 15;
+  --ink: 15 56 15;
+  --muted: 38 84 38;
+  --accent: 15 56 15;
+  --accent2: 48 98 48;
+  --screen: 155 188 15;
+  --screen-ink: 15 56 15;
+  --device: 188 196 168;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+body {
+  background-image: radial-gradient(rgb(var(--ink) / 0.07) 1px, transparent 1px);
+  background-size: 16px 16px;
+  transition: background-color .25s ease, color .25s ease;
+}
+::selection { background: rgb(var(--accent)); color: rgb(var(--surface)); }
+
+/* ---------- Pixel primitives ---------- */
+.px-card {
+  background: rgb(var(--surface));
+  border: 3px solid rgb(var(--ink));
+  box-shadow: 6px 6px 0 rgb(var(--ink));
+}
+.px-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+  border: 3px solid rgb(var(--ink));
+  box-shadow: 4px 4px 0 rgb(var(--ink));
+  font-family: "Press Start 2P", monospace;
+  font-size: .7rem; line-height: 1.4;
+  padding: .9rem 1.1rem;
+  text-transform: uppercase;
+  transition: transform .08s steps(2), box-shadow .08s steps(2);
+}
+.px-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 rgb(var(--ink)); }
+.px-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 rgb(var(--ink)); }
+.px-tag {
+  display: inline-block;
+  border: 2px solid rgb(var(--ink));
+  padding: .15rem .45rem;
+  font-size: .75rem; font-weight: 500;
+  background: rgb(var(--bg));
+}
+:focus-visible { outline: 3px dashed rgb(var(--accent)); outline-offset: 3px; }
+
+/* Pixel-art bullet: a tiny square instead of a round dot */
+.px-list li { position: relative; padding-left: 1.25rem; }
+.px-list li::before {
+  content: ""; position: absolute; left: 0; top: .6em;
+  width: 8px; height: 8px; background: rgb(var(--accent));
+}
+
+/* ---------- Hero console ---------- */
+.screen {
+  background: rgb(var(--screen));
+  color: rgb(var(--screen-ink));
+  position: relative; overflow: hidden;
+  image-rendering: pixelated;
+}
+.screen::after { /* scanlines */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgb(0 0 0 / .06) 0 2px, transparent 2px 4px);
+}
+.dpad { position: relative; width: 72px; height: 72px; }
+.dpad::before, .dpad::after {
+  content: ""; position: absolute; background: rgb(var(--ink)); border-radius: 3px;
+}
+.dpad::before { left: 24px; top: 0; width: 24px; height: 72px; }
+.dpad::after  { top: 24px; left: 0; width: 72px; height: 24px; }
+
+.blink { animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.caret::after { content: "_"; animation: blink 1s steps(1) infinite; }
+
+/* ---------- Cartridge cards ---------- */
+.cart { position: relative; }
+.cart-ridges {
+  height: 14px;
+  background: repeating-linear-gradient(90deg, rgb(var(--ink) / .85) 0 6px, transparent 6px 12px);
+  opacity: .35;
+}
+.cart-thumb {
+  aspect-ratio: 16 / 9;
+  background-color: rgb(var(--c));
+  background-image:
+    linear-gradient(45deg, rgb(0 0 0 / .14) 25%, transparent 25%, transparent 75%, rgb(0 0 0 / .14) 75%),
+    linear-gradient(45deg, rgb(0 0 0 / .14) 25%, transparent 25%, transparent 75%, rgb(0 0 0 / .14) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+  border-bottom: 3px solid rgb(var(--ink));
+}
+
+/* ---------- Timeline ---------- */
+.timeline { position: relative; }
+.timeline::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 11px; width: 4px;
+  background: repeating-linear-gradient(to bottom, rgb(var(--ink)) 0 8px, transparent 8px 14px);
+}
+.tl-node {
+  position: absolute; left: 0; top: 1.4rem;
+  width: 26px; height: 26px;
+  background: rgb(var(--accent));
+  border: 3px solid rgb(var(--ink));
+}
+.tl-node.is-current { animation: pulse 1.4s steps(2) infinite; }
+@keyframes pulse { 50% { background: rgb(var(--surface)); } }
+
+/* ---------- Reveal-on-scroll (only when JS is on) ---------- */
+.js .reveal { opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s steps(4); }
+.js .reveal.is-visible { opacity: 1; transform: none; }
+
+.nav-link[aria-current="true"] { color: rgb(var(--accent)); }
+.nav-link[aria-current="true"]::before { content: "▶ "; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .js .reveal { opacity: 1; transform: none; }
+}
+
+@tailwind utilities;

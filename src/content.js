@@ -20,7 +20,6 @@ export const PROFILE = {
   role: 'Senior Full-Stack Engineer',
   location: 'Jakarta, Indonesia',
   email: 'ryan.martin3003@gmail.com',
-  phone: '+62 811 905 3003',
   linkedin: 'https://linkedin.com/in/ryanhid',
   github: 'https://github.com/ryanma3003',
   resumePdf: 'Ryan Martin Hidayat - Senior Full-Stack Engineer Resume.pdf', // lives in /public

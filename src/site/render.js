@@ -158,7 +158,7 @@ export function renderBody({ PROFILE, TITLE, ABOUT, SKILLS, EXPERIENCE, PROJECTS
           .join('\n        ')}
       </ul>
       <address>
-        ${link(`mailto:${PROFILE.email}`, esc(PROFILE.email))} · ${link(`tel:${PROFILE.phone.replace(/\s/g, '')}`, esc(PROFILE.phone))} · ${esc(PROFILE.location)}
+        ${link(`mailto:${PROFILE.email}`, esc(PROFILE.email))} · ${esc(PROFILE.location)}
       </address>
     </div>
     <p class="credits">${esc(CONTACT.footer)}</p>

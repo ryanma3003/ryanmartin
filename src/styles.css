@@ -1,0 +1,202 @@
+/* Press Start 2P, Latin subset only (~12 KB woff2, font-display: swap). */
+@import '@fontsource/press-start-2p/latin-400.css';
+
+/* Every colour below is an NES 2C02 palette entry (see src/game/palette.js). */
+:root {
+  --black: #000000;   /* 0x0F */
+  --white: #fcfcfc;   /* 0x30 */
+  --light: #bcbcbc;   /* 0x10 */
+  --gray: #7c7c7c;    /* 0x00 */
+  --red: #f83800;     /* 0x16 */
+  --dred: #a81000;    /* 0x06 */
+  --gold: #f8b800;    /* 0x28 */
+  --cream: #fce0a8;   /* 0x37 */
+  --green: #58d854;   /* 0x2A */
+  --cyan: #3cbcfc;    /* 0x21 */
+  --blue: #0058f8;    /* 0x12 */
+  --bg: #000000;
+  --pixel: 'Press Start 2P', ui-monospace, monospace;
+  --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+  --hud-h: 3.25rem;
+  --travel: 36vh;    /* empty sky between dialog boxes, where the game shows through */
+  --ground: max(15rem, 34vh); /* keep the bottom strip clear for the hero at the end of the page */
+  color-scheme: dark;
+}
+/* Fallback scenery when no GPU canvas is available (also shown while the engine boots). */
+html[data-biome='title'] { --bg: #000000; }
+html[data-biome='forest'] { --bg: #3cbcfc; }
+html[data-biome='mountain'] { --bg: #004058; }
+html[data-biome='castle'] { --bg: #000000; }
+html[data-biome='boss'] { --bg: #4428bc; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--hud-h) + 1rem); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--white);
+  font: 1rem/1.7 var(--mono);
+  overflow-x: hidden;
+}
+h1, h2, h3, .kicker, .world-tag, .press-start, .title-menu, .hint, .px-btn, .badge, .xp-tag, .tags, .hud, .toast, .levelup, dt, dd, .credits {
+  font-family: var(--pixel);
+  font-weight: 400;
+}
+h2 { font-size: clamp(1rem, 3.2vw, 1.5rem); line-height: 1.5; margin: 0 0 1.25rem; color: var(--gold); }
+h3 { font-size: .8rem; line-height: 1.8; margin: 1.25rem 0 .75rem; color: var(--cream); }
+h3:first-child { margin-top: 0; }
+p { margin: 0 0 1rem; }
+a { color: var(--cyan); text-underline-offset: 3px; }
+a:hover { color: var(--gold); }
+:focus-visible { outline: 3px dashed var(--gold); outline-offset: 3px; }
+::selection { background: var(--red); color: var(--white); }
+strong { color: var(--cream); font-weight: 600; }
+
+.skip { position: fixed; left: .75rem; top: -4rem; z-index: 50; background: var(--black); color: var(--white); padding: .75rem 1rem; border: 4px solid var(--white); font-family: var(--pixel); font-size: .7rem; }
+.skip:focus { top: .75rem; }
+
+/* ------------------------------------------------------------------ game canvas (decorative layer) */
+.stage { position: fixed; inset: 0 auto auto 0; width: 100vw; height: 100lvh; z-index: 0; overflow: hidden; pointer-events: none; }
+.stage canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+
+/* ------------------------------------------------------------------ HUD */
+.hud {
+  position: fixed; inset: 0 0 auto 0; z-index: 20;
+  min-height: var(--hud-h);
+  display: flex; align-items: center; gap: .5rem 1.25rem; flex-wrap: wrap;
+  padding: .45rem clamp(.5rem, 2vw, 1.25rem);
+  background: var(--black);
+  border-bottom: 4px solid var(--white);
+  font-size: .625rem; line-height: 1;
+  --lv: 1;
+}
+.hud-nav { display: flex; align-items: center; gap: .75rem; }
+.hud-logo { color: var(--white); text-decoration: none; display: inline-flex; align-items: center; gap: .5rem; padding: .35rem 0; }
+.hud-logo::before { content: ''; width: .6rem; height: .6rem; background: var(--red); }
+.hud-map { position: relative; }
+.hud-map summary { cursor: pointer; list-style: none; padding: .45rem .55rem; border: 3px solid var(--white); }
+.hud-map summary::-webkit-details-marker { display: none; }
+.hud-map summary::after { content: ' ▼'; }
+.hud-map[open] summary::after { content: ' ▲'; }
+.hud-map ul { position: absolute; top: calc(100% + .6rem); left: 0; margin: 0; padding: .5rem; list-style: none; background: var(--black); border: 4px solid var(--white); min-width: 13rem; }
+.hud-map li a { display: block; padding: .7rem .5rem; color: var(--white); text-decoration: none; line-height: 1.3; }
+.hud-map li a:hover, .hud-map li a:focus-visible { color: var(--gold); }
+.hud-map li a:hover::before, .hud-map li a:focus-visible::before { content: '▶ '; }
+
+.hud-stats { display: flex; align-items: center; gap: .5rem 1.1rem; flex-wrap: wrap; flex: 1; }
+.hud-cell { display: inline-flex; align-items: center; gap: .45rem; white-space: nowrap; }
+.hud-cell .lbl { color: var(--gold); }
+.hud-cell b { font-weight: 400; min-width: 2ch; }
+.bar { position: relative; display: inline-block; height: .6rem; width: calc(1.75rem + var(--lv) * .625rem); border: 2px solid var(--white); background: var(--black); }
+.bar i { position: absolute; inset: 0; transform-origin: left; }
+.bar-hp i { background: var(--red); }
+.bar-xp i { background: var(--green); transform: scaleX(var(--xp, 0)); }
+.hud-zone { color: var(--cream); }
+.hud-btn { font: inherit; color: var(--white); background: var(--black); border: 3px solid var(--white); padding: .45rem .55rem; cursor: pointer; }
+.hud-btn[aria-pressed='true'] { color: var(--black); background: var(--gold); }
+
+/* ------------------------------------------------------------------ overlays */
+.toast {
+  position: fixed; left: 50%; top: calc(var(--hud-h) + .9rem); z-index: 15; transform: translateX(-50%);
+  max-width: min(32rem, 92vw); padding: .7rem .9rem; background: var(--black); border: 4px solid var(--white);
+  font-size: .625rem; line-height: 1.6; text-align: center; visibility: hidden;
+}
+.toast.is-on { visibility: visible; }
+.toast em { font-style: normal; color: var(--gold); }
+.levelup {
+  position: fixed; left: 50%; top: 38%; z-index: 16; transform: translate(-50%, -50%);
+  padding: 1rem 1.25rem; background: var(--black); border: 4px solid var(--gold); color: var(--gold);
+  font-size: clamp(.8rem, 2.6vw, 1.25rem); line-height: 1.6; text-align: center; white-space: nowrap;
+  visibility: hidden;
+}
+.levelup.is-on { visibility: visible; animation: flash .12s steps(1) 6; }
+.levelup small { display: block; color: var(--white); font-size: .55em; }
+.xp-fly { position: fixed; left: 0; top: 0; z-index: 17; pointer-events: none; font-family: var(--pixel); font-size: .6rem; color: var(--gold); text-shadow: 2px 2px 0 var(--black); }
+@keyframes flash { 50% { color: var(--white); border-color: var(--white); } }
+
+/* ------------------------------------------------------------------ zones & dialog boxes */
+main, .zone-boss { position: relative; z-index: 1; }
+.zone { padding: 22vh clamp(1rem, 5vw, 4.5rem) 0; }
+.dialog {
+  position: relative; max-width: 40rem; margin: 0 0 var(--travel);
+  padding: clamp(1rem, 3vw, 1.6rem);
+  background: var(--black);
+  border: 4px solid var(--white);
+  box-shadow: 0 0 0 4px var(--black), 8px 8px 0 4px rgb(0 0 0 / .45);
+  border-radius: 6px;
+}
+.dialog > :last-child { margin-bottom: 0; }
+.world-tag { margin: 0 0 .9rem; font-size: .55rem; color: var(--light); letter-spacing: .05em; }
+.meta { color: var(--light); font-size: .9rem; }
+h3 .meta { font-size: .7em; }
+.badge { display: inline-block; padding: .2rem .35rem; font-size: .5rem; background: var(--dred); color: var(--white); vertical-align: middle; }
+
+.px-list { margin: 0; padding: 0; list-style: none; }
+.px-list li { position: relative; padding-left: 1.4rem; margin-bottom: .7rem; }
+.px-list li::before { content: ''; position: absolute; left: .1rem; top: .6em; width: .5rem; height: .5rem; background: var(--red); }
+.tags { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0; padding: 0; list-style: none; font-size: .55rem; line-height: 1.4; }
+.tags li { padding: .45rem .55rem; border: 2px solid var(--light); color: var(--white); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .75rem; margin: 0; }
+.stat { border: 2px solid var(--gray); padding: .7rem .8rem; }
+.stat dt { font-size: .55rem; line-height: 1.6; color: var(--light); margin-bottom: .5rem; }
+.stat dd { margin: 0; font-size: .85rem; line-height: 1.5; color: var(--gold); }
+
+/* milestone = enemy. The tag turns into CLEARED once the hero defeats it. */
+.xp-tag { display: inline-block; margin-left: .4rem; padding: .15rem .35rem; font-size: .5rem; line-height: 1.4; color: var(--black); background: var(--light); vertical-align: middle; white-space: nowrap; }
+.milestone.is-defeated .xp-tag { background: var(--gold); }
+.milestone.is-defeated .xp-tag::after { content: ' CLEAR'; }
+
+/* ------------------------------------------------------------------ title screen */
+.zone-title { padding-top: calc(var(--hud-h) + 6vh); min-height: 100svh; padding-bottom: var(--ground); }
+.title-screen { max-width: 46rem; }
+.kicker { font-size: .625rem; color: var(--red); margin-bottom: 1.5rem; }
+.logo { margin: 0; font-size: clamp(1.6rem, 6vw, 3.4rem); line-height: 1.3; color: var(--white); text-shadow: 4px 4px 0 var(--dred); }
+.logo-accent { color: var(--gold); }
+.role { margin-top: 1.25rem; font-size: 1.15rem; color: var(--cream); font-weight: 600; }
+.tagline { color: var(--light); max-width: 36rem; }
+.press-start { display: inline-block; margin: 1.25rem 0 1.75rem; padding: .9rem 1.1rem; font-size: clamp(.8rem, 2.4vw, 1.05rem); color: var(--white); text-decoration: none; background: var(--black); border: 4px solid var(--white); }
+.press-start:hover { color: var(--gold); border-color: var(--gold); }
+.blink { animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.title-menu { display: flex; flex-wrap: wrap; gap: .5rem 1.4rem; margin: 0 0 1.5rem; padding: 0; list-style: none; font-size: .6rem; line-height: 1.6; }
+.title-menu a { color: var(--white); }
+.hint { font-size: .55rem; line-height: 1.8; color: var(--light); max-width: 30rem; }
+
+/* ------------------------------------------------------------------ boss room / footer */
+.zone-boss { min-height: 100svh; padding-bottom: var(--ground); display: flex; flex-direction: column; justify-content: flex-end; }
+.boss-panel { border-color: var(--red); margin-bottom: 1.5rem; }
+.boss-panel .world-tag { color: var(--red); }
+.boss-hp { height: .75rem; margin: 0 0 1.25rem; border: 2px solid var(--white); background: var(--black); }
+.boss-hp-fill { display: block; height: 100%; background: var(--red); transform-origin: left; transform: scaleX(var(--boss-hp, 1)); }
+.victory { display: none; color: var(--gold); font-family: var(--pixel); font-size: .7rem; line-height: 1.7; }
+.boss-panel.is-defeated { border-color: var(--gold); }
+.boss-panel.is-defeated .victory { display: block; }
+.boss-panel.is-defeated .px-btn-primary { animation: flash-btn .5s steps(1) infinite; }
+@keyframes flash-btn { 50% { background: var(--gold); color: var(--black); } }
+.cta { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0 0 1.25rem; padding: 0; list-style: none; }
+.px-btn { display: inline-block; padding: .9rem 1rem; font-size: .65rem; line-height: 1.4; color: var(--white); background: var(--black); text-decoration: none; border: 4px solid var(--white); box-shadow: 4px 4px 0 var(--gray); }
+.px-btn:hover { color: var(--black); background: var(--white); }
+.px-btn:active { transform: translate(4px, 4px); box-shadow: none; }
+.px-btn-primary { background: var(--dred); }
+address { font-style: normal; color: var(--light); font-size: .9rem; }
+.credits { margin: 0; padding: 0 0 1rem; font-size: .5rem; line-height: 1.8; color: var(--white); text-shadow: 2px 2px 0 var(--black); }
+
+@media (max-width: 640px) {
+  :root { --travel: 30vh; --hud-h: 4.6rem; }
+  .hud { font-size: .5rem; gap: .4rem .75rem; }
+  .hud-stats { order: 3; flex-basis: 100%; gap: .4rem .8rem; }
+  .hud-zone { display: none; }
+  .hud-btn { margin-left: auto; }
+  body { font-size: .95rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+@media print {
+  .stage, .hud, .toast, .levelup, .xp-tag, .skip { display: none !important; }
+  body { background: #fff; color: #000; }
+  .dialog { border: 0; box-shadow: none; background: none; margin: 0 0 1rem; }
+  .zone { padding: 0; min-height: 0; }
+}
